@@ -3,8 +3,6 @@
 ################################################################################
 
 /Book/appsettings.json
-/.vs/Book/v16
 /.vs
-/Book/bin/Debug/netcoreapp2.1
 /Book/obj
 /Book/bin
