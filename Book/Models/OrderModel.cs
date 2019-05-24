@@ -25,6 +25,13 @@ namespace Book.Models
         /// </summary>
         public string Address { get; set; }
 
+        /// <summary>
+        /// 总价格。
+        /// </summary>
+        public double Cost { get; set; }
+
+        public string ImageURL { get; set; }
+
         public DateTime TimeStamp { get; set; }
 
         public OrderModel(OrderEntity order)
@@ -33,6 +40,7 @@ namespace Book.Models
             BuyerName = order.BuyerName;
             PhoneNumber = order.PhoneNumber;
             Address = order.Address;
+            Cost = order.Cost;
             TimeStamp = order.TimeStamp;
         }
     }

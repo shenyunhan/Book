@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Book.Extensions;
+using Book.Models;
 using Book.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,32 +15,51 @@ namespace Book.Controllers
     [ApiController]
     public class ShoppingCartController : ControllerBase
     {
-        private readonly IUserService _users;
+        private readonly IHttpContextAccessor _accessor;
         private readonly IShoppingCartService _carts;
 
-        public ShoppingCartController(IUserService users, IShoppingCartService carts)
+        public ShoppingCartController(IHttpContextAccessor accessor, IShoppingCartService carts)
         {
-            _users = users;
+            _accessor = accessor;
             _carts = carts;
         }
 
         [HttpGet("getMy")]
-        public ActionResult<IEnumerable<int>> GetByUser([FromQuery] string openId)
+        public ActionResult<ResultModel> GetByUser()
         {
-            var userId = _users.GetIdByOpenId(openId);
-            return _carts.GetCartRecords(entity => entity.UserId == userId);
+            try
+            {
+                var userId = _accessor.HttpContext.GetUserId();
+
+                System.Console.WriteLine($"Shopping cart info got by user {userId}.");
+
+                return ResultModel.Success(_carts.GetCartRecords(entity => entity.UserId == userId));
+            }
+            catch (Exception e)
+            {
+                return ResultModel.Fail(e.Message);
+            }
         }
 
         [HttpPost("add")]
-        public ActionResult<bool> Post([FromBody] JObject json)
+        public ActionResult<ResultModel> Post([FromBody] JObject json)
         {
-            var userId = _users.GetIdByOpenId((string)json["openId"]);
-            var bookId = (int)json["boolId"];
-            var number = (int)json["number"];
+            try
+            {
+                var userId = _accessor.HttpContext.GetUserId();
+                var bookId = (int)json["bookId"];
+                var number = (int)json["number"];
 
-            _carts.AddInCart(userId, bookId, number);
+                _carts.AddInCart(userId, bookId, number);
 
-            return true;
+                System.Console.WriteLine($"Book {bookId} is added into user {userId}'s shopping cart.");
+
+                return ResultModel.Success();
+            }
+            catch (Exception e)
+            {
+                return ResultModel.Fail(e.Message);
+            }
         }
     }
 }

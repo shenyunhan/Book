@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using Book.Extensions;
 using Book.Models;
 using Book.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 
@@ -11,59 +13,97 @@ namespace Book.Controllers
     [ApiController]
     public class RewardsController : ControllerBase
     {
-        private readonly IUserService _users;
+        private readonly IHttpContextAccessor _accessor;
         private readonly IRewardService _rewards;
 
-        public RewardsController(IUserService users, IRewardService rewards)
+        public RewardsController(IHttpContextAccessor accessor, IRewardService rewards)
         {
-            _users = users;
+            _accessor = accessor;
             _rewards = rewards;
         }
 
         [HttpGet("getAll")]
-        public ActionResult<IEnumerable<RewardModel>> GetAll()
+        public ActionResult<ResultModel> GetAll()
         {
-            return _rewards.GetRewards(entity => true);
+            try
+            {
+                var userId = _accessor.HttpContext.GetUserId();
+
+                System.Console.WriteLine($"All rewards' info got by user {userId}.");
+
+                return ResultModel.Success(_rewards.GetRewards(entity => true));
+            }
+            catch (Exception e)
+            {
+                return ResultModel.Fail(e.Message);
+            }
         }
 
         [HttpGet("getMy")]
-        public ActionResult<IEnumerable<RewardModel>> GetByUser(string openId)
+        public ActionResult<ResultModel> GetByUser()
         {
-            int userId = _users.GetIdByOpenId(openId);
-            return _rewards.GetRewards(entity => entity.UserId == userId);
+            try
+            {
+                var userId = _accessor.HttpContext.GetUserId();
+
+                System.Console.WriteLine($"User {userId}'s rewards got.");
+
+                return ResultModel.Success(_rewards.GetRewards(entity => entity.UserId == userId));
+            }
+            catch (Exception e)
+            {
+                return ResultModel.Fail(e.Message);
+            }
         }
 
         [HttpDelete("cancel")]
-        public ActionResult<bool> DeleteById([FromBody] string raw)
+        public ActionResult<ResultModel> DeleteById([FromBody] JObject json)
         {
-            var json = JObject.Parse(raw);
+            try
+            {
+                var userId = _accessor.HttpContext.GetUserId();
 
-            var id = (int)json["id"];
-            _rewards.RemoveRewards(entity => entity.Id == id);
-            return true;
+                var id = (int)json["id"];
+                _rewards.RemoveRewards(entity => entity.Id == id);
+
+                System.Console.WriteLine($"Reward canceled by user {userId}.");
+
+                return ResultModel.Success();
+            }
+            catch (Exception e)
+            {
+                return ResultModel.Fail(e.Message);
+            }
         }
 
         [HttpPost("add")]
-        public ActionResult<bool> Post([FromBody] string raw)
+        public ActionResult<ResultModel> Post([FromBody] JObject json)
         {
-            var json = JObject.Parse(raw);
+            try
+            {
+                var userId = _accessor.HttpContext.GetUserId();
+                var bookName = (string)json["bookName"];
+                var category = (int)json["category"];
+                var imageURL = (string)json["imageURL"];
+                var press = (string)json["press"];
+                var author = (string)json["author"];
+                var publishedDate = (DateTime)json["publishedDate"];
+                var depreciation = (int)json["depreciation"];
+                var ISBN = (string)json["ISBN"];
+                var price = (double)json["price"];
+                var description = (string)json["description"];
 
-            var userId = _users.GetIdByOpenId((string)json["openId"]);
-            var bookName = (string)json["bookName"];
-            var category = (int)json["category"];
-            var imageURL = (string)json["imageURL"];
-            var press = (string)json["press"];
-            var author = (string)json["author"];
-            var publishedDate = (DateTime)json["publishedDate"];
-            var depreciation = (int)json["depreciation"];
-            var ISBN = (string)json["ISBN"];
-            var price = (double)json["price"];
-            var description = (string)json["description"];
+                _rewards.AddReward(userId, bookName, press, category, author,
+                    ISBN, price, imageURL, publishedDate, depreciation, description);
 
-            _rewards.AddReward(userId, bookName, press, category, author,
-                ISBN, price, imageURL, publishedDate, depreciation, description);
+                System.Console.WriteLine($"Reward added by user {userId}.");
 
-            return true;
+                return ResultModel.Success();
+            }
+            catch (Exception e)
+            {
+                return ResultModel.Fail(e.Message);
+            }
         }
     }
 }

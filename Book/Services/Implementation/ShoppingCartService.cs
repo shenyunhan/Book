@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Book.Data.Context;
 using Book.Data.Entities;
+using Book.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Book.Services.Implementation
@@ -18,16 +19,16 @@ namespace Book.Services.Implementation
             _mySql = mySql;
         }
 
-        public bool AddInCart(int userId, int bookId, int number)
+        public void AddInCart(int userId, int bookId, int number)
         {
             var sell = _mySql.Sells.
                 Where(entity => entity.Id == bookId).
                 ToArray();
             if (sell.Length != 1)
-                throw new Exception("Book not exists.");
+                throw new Exception("Sell not exists.");
 
             if (sell[0].Remaining < number)
-                return false;
+                throw new Exception("Not enough books.");
 
             sell[0].Remaining -= number;
             _mySql.Sells.Update(sell[0]);
@@ -39,15 +40,23 @@ namespace Book.Services.Implementation
                 Number = number
             });
             _mySql.SaveChangesAsync();
-            return true;
         }
 
-        public List<int> GetCartRecords(Expression<Func<ShoppingCartEntity, bool>> predicate)
+        public List<SellModel> GetCartRecords(Expression<Func<ShoppingCartEntity, bool>> predicate)
         {
-            return _mySql.ShoppingCarts.
+            var books = _mySql.ShoppingCarts.
                 Where(predicate).
                 Select(entity => entity.BookId).
                 ToList();
+
+            var res = new List<SellModel>();
+            foreach (var bookId in books)
+            {
+                res.Add(new SellModel(_mySql.Sells.
+                    FirstOrDefault(entity => entity.Id == bookId)));
+            }
+
+            return res;
         }
 
         public void RemoveCarts(Expression<Func<ShoppingCartEntity, bool>> predicate)

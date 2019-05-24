@@ -13,15 +13,32 @@ namespace Book.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OrdersController : ControllerBase
+    public class PostsController : ControllerBase
     {
         private readonly IHttpContextAccessor _accessor;
-        private readonly IOrderService _orders;
+        private readonly IPostService _posts;
 
-        public OrdersController(IHttpContextAccessor accessor, IOrderService orders)
+        public PostsController(IHttpContextAccessor accessor, IPostService posts)
         {
             _accessor = accessor;
-            _orders = orders;
+            _posts = posts;
+        }
+
+        [HttpGet("getAll")]
+        public ActionResult<ResultModel> GetAll()
+        {
+            try
+            {
+                var userId = _accessor.HttpContext.GetUserId();
+
+                System.Console.WriteLine($"All posts got by user {userId}.");
+
+                return ResultModel.Success(_posts.GetPosts(entity => true));
+            }
+            catch (Exception e)
+            {
+                return ResultModel.Fail(e.Message);
+            }
         }
 
         [HttpGet("getMy")]
@@ -31,9 +48,9 @@ namespace Book.Controllers
             {
                 var userId = _accessor.HttpContext.GetUserId();
 
-                System.Console.WriteLine($"User {userId}'s orders got.");
+                System.Console.WriteLine($"{userId}'s posts got.");
 
-                return ResultModel.Success(_orders.GetOrders(entity => entity.BuyerId == userId));
+                return ResultModel.Success(_posts.GetPosts(entity => entity.AuthorId == userId));
             }
             catch (Exception e)
             {
@@ -47,14 +64,11 @@ namespace Book.Controllers
             try
             {
                 var userId = _accessor.HttpContext.GetUserId();
-                var bookId = (int)json["bookId"];
-                var buyerName = (string)json["buyerName"];
-                var phoneNumber = (string)json["phoneNumber"];
-                var address = (string)json["address"];
+                var title = (string)json["title"];
+                var content = (string)json["content"];
+                _posts.AddPost(userId, title, content);
 
-                _orders.AddOrder(userId, bookId, buyerName, phoneNumber, address);
-
-                System.Console.WriteLine($"Book {bookId} is ordered by user {userId}.");
+                System.Console.WriteLine($"Post added by user {userId}.");
 
                 return ResultModel.Success();
             }

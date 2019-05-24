@@ -39,6 +39,11 @@ namespace Book.Data.Entities
         /// </summary>
         public string Address { get; set; }
 
+        /// <summary>
+        /// 总价格。
+        /// </summary>
+        public double Cost { get; set; }
+
         public DateTime TimeStamp { get; set; }
 
         /// <summary>
@@ -59,14 +64,14 @@ namespace Book.Data.Entities
             builder.Property(entity => entity.Id).
                 ValueGeneratedOnAdd();
 
+            builder.Property(entity => entity.TimeStamp)
+                .ValueGeneratedOnAdd()
+                .HasValueGenerator<DateTimeGenerator>();
+
             builder.HasOne(entity => entity.Buyer).
                 WithMany(entity => entity.Orders).
                 HasForeignKey(entity => entity.BuyerId).
                 OnDelete(DeleteBehavior.Cascade);
-
-            builder.Property(entity => entity.TimeStamp)
-                .ValueGeneratedOnAdd()
-                .HasValueGenerator<DateTimeGenerator>();
 
             builder.HasOne(entity => entity.Book).
                 WithMany(entity => entity.Orders).

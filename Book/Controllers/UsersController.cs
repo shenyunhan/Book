@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Book.Extensions;
+using Book.Models;
 using Book.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
-using NLog;
 
 namespace Book.Controllers
 {
@@ -14,28 +15,45 @@ namespace Book.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
+        private readonly IHttpContextAccessor _accessor;
+        private readonly IWechatService _wechat;
         private readonly IUserService _users;
 
-        public UsersController(IUserService users)
+        public UsersController(IHttpContextAccessor accessor, IWechatService wechat, IUserService users)
         {
+            _accessor = accessor;
+            _wechat = wechat;
             _users = users;
         }
 
         [HttpPut("login")]
-        public ActionResult<bool> Login([FromBody] JObject json)
+        public ActionResult<ResultModel> Login([FromBody] JObject json)
         {
-            var openId = (string)json["openId"];
-            var nickName = (string)json["nickName"];
-            var imageURL = (string)json["imageURL"];
+            try
+            {
+                var code = (string)json["code"];
+                var nickName = (string)json["nickName"];
+                var imageURL = (string)json["imageURL"];
 
-            Logger log = LogManager.GetCurrentClassLogger();
-            log.Info("openId = {0}, nickName = {1}, imageURL = {2}", openId, nickName, imageURL);
+                var session = _wechat.Code2Session(code);
 
-            if (_users.FindUser(openId))
-                _users.UpdateUser(openId, nickName, imageURL);
-            else _users.AddUser(openId, nickName, imageURL);
+                var openId = (string)session["openid"];
 
-            return true;
+                if (_users.FindUser(openId))
+                    _users.UpdateUser(openId, nickName, imageURL);
+                else _users.AddUser(openId, nickName, imageURL);
+
+                int userId = _users.GetIdByOpenId(openId);
+                _accessor.HttpContext.SetUserKey(userId);
+
+                System.Console.WriteLine($"New connection, userID = {userId}.");
+
+                return ResultModel.Success();
+            }
+            catch (Exception e)
+            {
+                return ResultModel.Fail(e.Message);
+            }
         }
     }
 }

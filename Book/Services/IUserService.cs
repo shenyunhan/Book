@@ -1,4 +1,6 @@
-﻿namespace Book.Services
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Book.Services
 {
     public interface IUserService
     {

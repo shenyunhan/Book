@@ -13,27 +13,27 @@ namespace Book.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OrdersController : ControllerBase
+    public class CommentsController : ControllerBase
     {
         private readonly IHttpContextAccessor _accessor;
-        private readonly IOrderService _orders;
+        private readonly ICommentService _comments;
 
-        public OrdersController(IHttpContextAccessor accessor, IOrderService orders)
+        public CommentsController(IHttpContextAccessor accessor, ICommentService comments)
         {
             _accessor = accessor;
-            _orders = orders;
+            _comments = comments;
         }
 
-        [HttpGet("getMy")]
-        public ActionResult<ResultModel> GetByUser()
+        [HttpGet("getByPost")]
+        public ActionResult<ResultModel> GetByPost([FromQuery] int postId)
         {
             try
             {
                 var userId = _accessor.HttpContext.GetUserId();
 
-                System.Console.WriteLine($"User {userId}'s orders got.");
+                System.Console.WriteLine($"Post {postId}'s comments got by user {userId}.");
 
-                return ResultModel.Success(_orders.GetOrders(entity => entity.BuyerId == userId));
+                return ResultModel.Success(_comments.GetComments(entity => entity.PostId == postId));
             }
             catch (Exception e)
             {
@@ -47,14 +47,11 @@ namespace Book.Controllers
             try
             {
                 var userId = _accessor.HttpContext.GetUserId();
-                var bookId = (int)json["bookId"];
-                var buyerName = (string)json["buyerName"];
-                var phoneNumber = (string)json["phoneNumber"];
-                var address = (string)json["address"];
+                var postId = (int)json["postId"];
+                var content = (string)json["content"];
+                _comments.AddComment(postId, userId, content);
 
-                _orders.AddOrder(userId, bookId, buyerName, phoneNumber, address);
-
-                System.Console.WriteLine($"Book {bookId} is ordered by user {userId}.");
+                System.Console.WriteLine($"Comment added to Post {postId} by user {userId}.");
 
                 return ResultModel.Success();
             }

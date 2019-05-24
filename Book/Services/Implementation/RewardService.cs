@@ -40,11 +40,11 @@ namespace Book.Services.Implementation
 
         public List<RewardModel> GetRewards(Expression<Func<RewardEntity, bool>> predicate)
         {
-            var rewardList = _mySql.Rewards.
+            var rewards = _mySql.Rewards.
                 Where(predicate).
                 ToList();
             var res = new List<RewardModel>();
-            foreach (var reward in rewardList)
+            foreach (var reward in rewards)
             {
                 res.Add(new RewardModel(reward));
             }

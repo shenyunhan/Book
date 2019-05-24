@@ -31,7 +31,6 @@ namespace Book.Data.Entities
         /// <summary>
         /// 发布时间。
         /// </summary>
-        [Timestamp]
         public DateTime TimeStamp { get; set; }
         
         /// <summary>
@@ -51,6 +50,10 @@ namespace Book.Data.Entities
             builder.HasKey(entity => entity.Id);
             builder.Property(entity => entity.Id).
                 ValueGeneratedOnAdd();
+
+            builder.Property(entity => entity.TimeStamp)
+                .ValueGeneratedOnAdd()
+                .HasValueGenerator<DateTimeGenerator>();
 
             builder.HasOne(entity => entity.Author).
                 WithMany(entity => entity.Comments).

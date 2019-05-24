@@ -42,11 +42,11 @@ namespace Book.Services.Implementation
 
         public List<SellModel> GetSells(Expression<Func<BookEntity, bool>> predicate)
         {
-            var sellList = _mySql.Sells.
+            var sells = _mySql.Sells.
                 Where(predicate).
                 ToList();
             var res = new List<SellModel>();
-            foreach (var sell in sellList)
+            foreach (var sell in sells)
             {
                 res.Add(new SellModel(sell));
             }
