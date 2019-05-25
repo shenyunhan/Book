@@ -89,6 +89,21 @@ namespace Book.Controllers
             }
         }
 
+        [HttpGet("getByWord")]
+        public ActionResult<ResultModel> GetByWord([FromQuery] string word)
+        {
+            try
+            {
+                var userId = _accessor.HttpContext.GetUserId();
+                return ResultModel.Success(_sells.
+                    GetSells(entity => entity.Name.Contains(word)));
+            }
+            catch (Exception e)
+            {
+                return ResultModel.Fail(e.Message);
+            }
+        }
+
         [HttpPost("add")]
         public ActionResult<ResultModel> Post([FromBody] JObject json)
         {

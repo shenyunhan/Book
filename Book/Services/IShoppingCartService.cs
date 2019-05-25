@@ -14,6 +14,6 @@ namespace Book.Services
 
         void RemoveCarts(Expression<Func<ShoppingCartEntity, bool>> predicate);
 
-        List<SellModel> GetCartRecords(Expression<Func<ShoppingCartEntity, bool>> predicate);
+        List<CartModel> GetCartRecords(Expression<Func<ShoppingCartEntity, bool>> predicate);
     }
 }

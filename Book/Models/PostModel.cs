@@ -30,6 +30,8 @@ namespace Book.Models
 
         public string ImageURL { get; set; }
 
+        public int Level { get; set; }
+
         /// <summary>
         /// 发帖时间。
         /// </summary>

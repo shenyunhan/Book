@@ -44,7 +44,8 @@ namespace Book.Services.Implementation
                 res.Add(new PostModel(post)
                 {
                     AuthorName = user.NickName,
-                    ImageURL = user.ImageURL
+                    ImageURL = user.ImageURL,
+                    Level = user.ExpPoints
                 });
             }
             return res;

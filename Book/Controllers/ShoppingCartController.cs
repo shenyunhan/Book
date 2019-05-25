@@ -61,5 +61,25 @@ namespace Book.Controllers
                 return ResultModel.Fail(e.Message);
             }
         }
+
+        [HttpDelete("remove")]
+        public ActionResult<ResultModel> Delete([FromBody] JObject json)
+        {
+            try
+            {
+                var userId = _accessor.HttpContext.GetUserId();
+                var bookId = (int)json["bookId"];
+
+                _carts.RemoveCarts(entity => entity.UserId == userId && entity.BookId == bookId);
+
+                System.Console.WriteLine($"Book {bookId} is removed from user {userId}'s shopping cart.");
+
+                return ResultModel.Success();
+            }
+            catch (Exception e)
+            {
+                return ResultModel.Fail(e.Message);
+            }
+        }
     }
 }

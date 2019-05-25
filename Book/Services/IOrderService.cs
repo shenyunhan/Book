@@ -10,7 +10,9 @@ namespace Book.Services
 {
     public interface IOrderService
     {
-        void AddOrder(int userId, int bookId, string buyerName, string phoneNumber, string address);
+        void AddOrderDirectly(int userId, int bookId, int number, string buyerName, string phoneNumber, string address);
+
+        void AddOrderFromCart(int userId, int bookId, string buyerName, string phoneNumber, string address);
 
         void RemoveOrders(Expression<Func<OrderEntity, bool>> predicate);
 

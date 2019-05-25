@@ -41,8 +41,32 @@ namespace Book.Controllers
             }
         }
 
-        [HttpPost("add")]
-        public ActionResult<ResultModel> Post([FromBody] JObject json)
+        [HttpPost("addDirectly")]
+        public ActionResult<ResultModel> PostDirectly([FromBody] JObject json)
+        {
+            try
+            {
+                var userId = _accessor.HttpContext.GetUserId();
+                var bookId = (int)json["bookId"];
+                var number = (int)json["number"];
+                var buyerName = (string)json["buyerName"];
+                var phoneNumber = (string)json["phoneNumber"];
+                var address = (string)json["address"];
+
+                _orders.AddOrderDirectly(userId, bookId, number, buyerName, phoneNumber, address);
+
+                System.Console.WriteLine($"Book {bookId} is ordered by user {userId}.");
+
+                return ResultModel.Success();
+            }
+            catch (Exception e)
+            {
+                return ResultModel.Fail(e.Message);
+            }
+        }
+
+        [HttpPost("addFromCart")]
+        public ActionResult<ResultModel> PostFromCart([FromBody] JObject json)
         {
             try
             {
@@ -52,7 +76,7 @@ namespace Book.Controllers
                 var phoneNumber = (string)json["phoneNumber"];
                 var address = (string)json["address"];
 
-                _orders.AddOrder(userId, bookId, buyerName, phoneNumber, address);
+                _orders.AddOrderFromCart(userId, bookId, buyerName, phoneNumber, address);
 
                 System.Console.WriteLine($"Book {bookId} is ordered by user {userId}.");
 

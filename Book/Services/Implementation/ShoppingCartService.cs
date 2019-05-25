@@ -42,18 +42,20 @@ namespace Book.Services.Implementation
             _mySql.SaveChangesAsync();
         }
 
-        public List<SellModel> GetCartRecords(Expression<Func<ShoppingCartEntity, bool>> predicate)
+        public List<CartModel> GetCartRecords(Expression<Func<ShoppingCartEntity, bool>> predicate)
         {
-            var books = _mySql.ShoppingCarts.
+            var carts = _mySql.ShoppingCarts.
                 Where(predicate).
-                Select(entity => entity.BookId).
                 ToList();
 
-            var res = new List<SellModel>();
-            foreach (var bookId in books)
+            var res = new List<CartModel>();
+            foreach (var cart in carts)
             {
-                res.Add(new SellModel(_mySql.Sells.
-                    FirstOrDefault(entity => entity.Id == bookId)));
+                res.Add(new CartModel(_mySql.Sells.
+                    FirstOrDefault(entity => entity.Id == cart.BookId))
+                {
+                    Number = cart.Number
+                });
             }
 
             return res;

@@ -15,6 +15,8 @@ using Book.Data.Context;
 using Book.Services;
 using Book.Services.Implementation;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 namespace Book
 {
@@ -31,6 +33,14 @@ namespace Book
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigin",
+                    builder => builder.WithOrigins(Environment.
+                    GetEnvironmentVariable("ASPNETCORE_URLS")).
+                    AllowAnyHeader().
+                    AllowAnyMethod());
+            });
 
             string appId = Configuration.GetSection("Wechat").GetValue<string>("AppId", null);
             string secret = Configuration.GetSection("Wechat").GetValue<string>("Secret");
@@ -64,6 +74,14 @@ namespace Book
 
             app.UseHttpsRedirection();
             app.UseMvc();
+
+            app.UseCors("AllowSpecificOrigin");
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\\Files")),
+                RequestPath = new PathString("/image")
+            });
         }
     }
 }

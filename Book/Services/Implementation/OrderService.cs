@@ -19,14 +19,35 @@ namespace Book.Services.Implementation
             _mySql = mySql;
         }
 
-        public void AddOrder(int userId, int bookId, string buyerName, string phoneNumber, string address)
+        public void AddOrderDirectly(int userId, int bookId, int number, string buyerName, string phoneNumber, string address)
+        {
+            var book = _mySql.Sells.FirstOrDefault(entity => entity.Id == bookId);
+            if (book.Remaining < number)
+                throw new Exception("Not enough books.");
+
+            book.Remaining -= number;
+            _mySql.Sells.Update(book);
+            double cost = number * book.Price;
+
+            _mySql.AddAsync(new OrderEntity
+            {
+                BuyerId = userId,
+                BookId = bookId,
+                BuyerName = buyerName,
+                PhoneNumber = phoneNumber,
+                Address = address,
+                Cost = cost
+            });
+            _mySql.SaveChangesAsync();
+        }
+
+        public void AddOrderFromCart(int userId, int bookId, string buyerName, string phoneNumber, string address)
         {
             var cart = _mySql.ShoppingCarts.
                 FirstOrDefault(entity => entity.UserId == userId && entity.BookId == bookId);
+
             var book = _mySql.Sells.FirstOrDefault(entity => entity.Id == bookId);
             double cost = cart.Number * book.Price;
-
-            System.Console.WriteLine($"Cost = {cost}.");
 
             _mySql.ShoppingCarts.Remove(cart);
 

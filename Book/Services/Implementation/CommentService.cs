@@ -44,7 +44,8 @@ namespace Book.Services.Implementation
                 res.Add(new CommentModel(comment)
                 {
                     AuthorName = user.NickName,
-                    ImageURL = user.ImageURL
+                    ImageURL = user.ImageURL,
+                    Level = user.ExpPoints
                 });
             }
             return res;
