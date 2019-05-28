@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using Book.Data.Context;
 using Book.Data.Entities;
 using Book.Models;
@@ -18,11 +19,11 @@ namespace Book.Services.Implementation
             _mySql = mySql;
         }
 
-        public void AddSell(int sellerId, string bookName, int remaining, int category,
+        public async Task AddSell(int sellerId, string bookName, int remaining, int category,
             string imageURL, string press, string author, DateTime publishedDate, int depreciation,
             string ISBN, double price, string description)
         {
-            _mySql.Sells.AddAsync(new BookEntity
+            await _mySql.Sells.AddAsync(new BookEntity
             {
                 SellerId = sellerId,
                 Name = bookName,
@@ -37,7 +38,7 @@ namespace Book.Services.Implementation
                 Price = price,
                 Description = description
             });
-            _mySql.SaveChangesAsync();
+            await _mySql.SaveChangesAsync();
         }
 
         public List<SellModel> GetSells(Expression<Func<BookEntity, bool>> predicate)
@@ -53,13 +54,13 @@ namespace Book.Services.Implementation
             return res;
         }
 
-        public void RemoveSells(Expression<Func<BookEntity, bool>> predicate)
+        public async Task RemoveSells(Expression<Func<BookEntity, bool>> predicate)
         {
             var sells = _mySql.Sells.
                 Where(predicate).
                 ToArray();
             _mySql.Sells.RemoveRange(sells);
-            _mySql.SaveChangesAsync();
+            await _mySql.SaveChangesAsync();
         }
     }
 

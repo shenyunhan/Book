@@ -56,6 +56,23 @@ namespace Book.Controllers
             }
         }
 
+        [HttpGet("getByCondition")]
+        public ActionResult<ResultModel> GetByCondition([FromQuery] int? category, [FromQuery] string word)
+        {
+            try
+            {
+                var userId = _accessor.HttpContext.GetUserId();
+                return ResultModel.Success(_rewards.
+                    GetRewards(entity =>
+                    (category == null ? true : entity.Category == category) &&
+                    (word == null ? true : entity.BookName.Contains(word))));
+            }
+            catch (Exception e)
+            {
+                return ResultModel.Fail(e.Message);
+            }
+        }
+
         [HttpDelete("cancel")]
         public ActionResult<ResultModel> DeleteById([FromBody] JObject json)
         {
@@ -63,7 +80,7 @@ namespace Book.Controllers
             {
                 var userId = _accessor.HttpContext.GetUserId();
 
-                var id = (int)json["id"];
+                var id = (int)json["rewardId"];
                 _rewards.RemoveRewards(entity => entity.Id == id);
 
                 System.Console.WriteLine($"Reward canceled by user {userId}.");

@@ -27,7 +27,7 @@ namespace Book.Controllers
         }
 
         [HttpPut("login")]
-        public ActionResult<ResultModel> Login([FromBody] JObject json)
+        public async Task<ActionResult<ResultModel>> Login([FromBody] JObject json)
         {
             try
             {
@@ -37,11 +37,14 @@ namespace Book.Controllers
 
                 var session = _wechat.Code2Session(code);
 
+                if (session["errcode"] != null)
+                    throw new Exception((string)session["errmsg"]);
+
                 var openId = (string)session["openid"];
 
                 if (_users.FindUser(openId))
-                    _users.UpdateUser(openId, nickName, imageURL);
-                else _users.AddUser(openId, nickName, imageURL);
+                    await _users.UpdateUser(openId, nickName, imageURL);
+                else await _users.AddUser(openId, nickName, imageURL);
 
                 int userId = _users.GetIdByOpenId(openId);
                 _accessor.HttpContext.SetUserKey(userId);
@@ -52,6 +55,7 @@ namespace Book.Controllers
             }
             catch (Exception e)
             {
+                System.Console.WriteLine(e.Message);
                 return ResultModel.Fail(e.Message);
             }
         }

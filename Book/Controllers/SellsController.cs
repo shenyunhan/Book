@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Book.Extensions;
 using Book.Models;
 using Book.Services;
@@ -28,6 +29,8 @@ namespace Book.Controllers
         {
             try
             {
+                System.Console.WriteLine("Start getting sells' info.");
+
                 var userId = _accessor.HttpContext.GetUserId();
 
                 System.Console.WriteLine($"All sells' info got by user {userId}.");
@@ -73,30 +76,16 @@ namespace Book.Controllers
             }
         }
 
-        // Get api/sells/getByCategory
-        [HttpGet("getByCategory")]
-        public ActionResult<ResultModel> GetByCategory([FromQuery] int category)
+        [HttpGet("getByCondition")]
+        public ActionResult<ResultModel> GetByCondition([FromQuery] int? category, [FromQuery] string words)
         {
             try
             {
                 var userId = _accessor.HttpContext.GetUserId();
                 return ResultModel.Success(_sells.
-                    GetSells(entity => entity.Category == category && entity.Remaining > 0));
-            }
-            catch (Exception e)
-            {
-                return ResultModel.Fail(e.Message);
-            }
-        }
-
-        [HttpGet("getByWord")]
-        public ActionResult<ResultModel> GetByWord([FromQuery] string word)
-        {
-            try
-            {
-                var userId = _accessor.HttpContext.GetUserId();
-                return ResultModel.Success(_sells.
-                    GetSells(entity => entity.Name.Contains(word)));
+                    GetSells(entity => entity.Remaining > 0 &&
+                    (category == null ? true : entity.Category == category) &&
+                    (words == null ? true : entity.Name.Contains(words))));
             }
             catch (Exception e)
             {
@@ -105,7 +94,7 @@ namespace Book.Controllers
         }
 
         [HttpPost("add")]
-        public ActionResult<ResultModel> Post([FromBody] JObject json)
+        public async Task<ActionResult<ResultModel>> Post([FromBody] JObject json)
         {
             try
             {
@@ -122,7 +111,7 @@ namespace Book.Controllers
                 var price = (double)json["price"];
                 var description = (string)json["description"];
 
-                _sells.AddSell(sellerId, bookName, remaining, category, imageURL,
+                await _sells.AddSell(sellerId, bookName, remaining, category, imageURL,
                     press, author, publishedDate, depreciation, ISBN, price, description);
 
                 System.Console.WriteLine($"New sell added by user {sellerId}.");

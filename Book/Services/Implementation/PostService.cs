@@ -27,6 +27,11 @@ namespace Book.Services.Implementation
                 Title = title,
                 Content = content,
             });
+
+            var user = _mySql.Users.FirstOrDefault(entity => entity.Id == authorId);
+            user.ExpPoints += 2;
+            _mySql.Users.Update(user);
+
             _mySql.SaveChangesAsync();
         }
 

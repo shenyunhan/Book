@@ -45,7 +45,7 @@ namespace Book.Controllers
                     var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
 
                     var fullPath = Path.Combine(filePath, fileName);
-                    res.Add(Path.Combine("/image", fileName));
+                    res.Add("/image/" + fileName);
 
                     using (var fs = System.IO.File.Create(fullPath))
                     {

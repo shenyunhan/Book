@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Book.Services.Implementation
 {
@@ -16,17 +17,17 @@ namespace Book.Services.Implementation
             _mySql = mySql;
         }
 
-        public void AddUser(string openId, string nickName, string imageURL)
+        public async Task AddUser(string openId, string nickName, string imageURL)
         {
-            _mySql.Users.
-                Add(new UserEntity
+            await _mySql.Users.
+                AddAsync(new UserEntity
                 {
                     OpenId = openId,
                     NickName = nickName,
                     ImageURL = imageURL,
                     ExpPoints = 0
                 });
-            _mySql.SaveChangesAsync();
+            await _mySql.SaveChangesAsync();
         }
 
         public bool FindUser(string openId)
@@ -48,7 +49,7 @@ namespace Book.Services.Implementation
             return id[0];
         }
 
-        public void UpdateUser(string openId, string nickName, string imageURL)
+        public async Task UpdateUser(string openId, string nickName, string imageURL)
         {
             var user = _mySql.Users.
                 FirstOrDefault(entity => entity.OpenId == openId);
@@ -59,7 +60,7 @@ namespace Book.Services.Implementation
             user.NickName = nickName;
             user.ImageURL = imageURL;
             _mySql.Update(user);
-            _mySql.SaveChangesAsync();
+            await _mySql.SaveChangesAsync();
         }
     }
 
